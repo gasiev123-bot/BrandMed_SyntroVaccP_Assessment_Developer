@@ -1,0 +1,193 @@
+﻿@model SyntroVaccPApp.DTOs.Administration.AdministrationCreateDto
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+<div class="modal-body p-4">
+
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <form id="createAdministrationForm"
+          asp-action="Create"
+          asp-controller="Administration"
+          method="post">
+
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="PatientId" />
+
+        <div class="row g-3">
+
+            <!-- HEADER -->
+            <div class="col-12 border-bottom pb-2 mb-3">
+                <h6 class="fw-bold small text-info" style="color:#004d5d !important">
+                    NEW ADMINISTRATION RECORD
+                </h6>
+                <div class="small text-muted">
+                    Patient: <strong>@Model.PatientName</strong>
+                </div>
+            </div>
+             
+            <!-- Vaccine -->
+            <div class="col-md-6">
+                <label asp-for="VaccineId" class="form-label small fw-bold">Vaccine</label>
+                <select asp-for="VaccineId"
+                        class="form-select"
+                        asp-items="ViewBag.Vaccines">
+                    <option value="">-- Select Vaccine --</option>
+                </select>
+                <span asp-validation-for="VaccineId" class="text-danger small"></span>
+            </div>
+
+            <!-- Batch -->
+            <div class="col-md-6">
+                <label asp-for="BatchId" class="form-label small fw-bold">Batch</label>
+                <select asp-for="BatchId"
+                        class="form-select"
+                        id="BatchId">
+                    <option value="">-- Select Batch --</option>
+                </select>
+
+                <span asp-validation-for="BatchId" class="text-danger small"></span>
+            </div>
+
+            <!-- ================= WHO ================= -->
+            <div class="col-md-6">
+                <label asp-for="ClinicianId" class="form-label small fw-bold">
+                    Clinician
+                </label>
+                <select asp-for="ClinicianId"
+                        class="form-select"
+                        asp-items="ViewBag.Clinicians">
+                    <option value="">-- Select Clinician --</option>
+                </select>
+                <span asp-validation-for="ClinicianId" class="text-danger small"></span>
+            </div>
+
+            <!-- Dose -->
+            <div class="col-md-3">
+                <label asp-for="DoseNumber" class="form-label small fw-bold">Dose #</label>
+                <input asp-for="DoseNumber"
+                       type="number"
+                       id="DoseNumber"
+                       class="form-control"
+                       min="1" />
+                <span asp-validation-for="DoseNumber" class="text-danger small"></span>
+            </div>
+
+            <!-- ================= WHEN ================= -->
+            <div class="col-md-3">
+                <label asp-for="AdministeredOn" class="form-label small fw-bold">
+                    Date Administered
+                </label>
+                <input asp-for="AdministeredOn"
+                       type="date"
+                       class="form-control" />
+                <span asp-validation-for="AdministeredOn" class="text-danger small"></span>
+            </div>
+
+            <!-- ================= WHERE ================= -->
+            <div class="col-md-6">
+                <label asp-for="FacilityId" class="form-label small fw-bold">
+                    Facility
+                </label>
+                <select asp-for="FacilityId"
+                        class="form-select"
+                        asp-items="ViewBag.Facilities">
+                    <option value="">-- Select Facility --</option>
+                </select>
+                <span asp-validation-for="FacilityId" class="text-danger small"></span>
+            </div>
+
+           
+
+            <!-- Notes -->
+            <div class="col-12">
+                <label asp-for="Notes" class="form-label small fw-bold">Notes</label>
+                <textarea asp-for="Notes"
+                          class="form-control"
+                          rows="3"></textarea>
+            </div>
+
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="mt-4 d-flex justify-content-end gap-2">
+            <button type="button"
+                    class="btn btn-outline-secondary px-4"
+                    data-bs-dismiss="modal">
+                Cancel
+            </button>
+
+            <button type="submit"
+                    class="btn text-white px-4 shadow-sm"
+                    style="background-color:#004d5d;">
+                Save Record
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    $(document).on("change", "#VaccineId", function () {
+
+        var vaccineId = $(this).val();
+        var patientId = $("#PatientId").val() || $("input[name='PatientId']").val();
+
+        // ===============================
+        // LOAD BATCHES
+        // ===============================
+        $("#BatchId").empty().append('<option>Loading...</option>');
+
+        if (vaccineId) {
+
+           $.get('/Administration/GetBatchesByVaccine',
+    { vaccineId: vaccineId },
+    function (data) {
+
+        $("#BatchId").empty();
+        $("#BatchId").append('<option value="">-- Select Batch --</option>');
+
+        if (data.length > 0) {
+
+            $.each(data, function (i, batch) {
+                $("#BatchId").append(
+                    '<option value="' + batch.batchId + '">' +
+                    batch.batchNumber +
+                    '</option>'
+                );
+            });
+
+            // ✅ Auto-select first batch
+            $("#BatchId").val(data[0].batchId);
+        }
+        else {
+            $("#BatchId").append(
+                '<option disabled>No valid batches available</option>'
+            );
+        }
+    });
+
+
+            // ===============================
+            // LOAD NEXT DOSE
+            // ===============================
+            $.get('/Administration/GetNextDose',
+                { patientId: patientId, vaccineId: vaccineId },
+                function (response) {
+
+                    if (response.success) {
+                        $("#DoseNumber").val(response.nextDose);
+                        $("#DoseNumber").attr("max", response.maxDose);
+                    }
+                    else {
+                        $("#DoseNumber").val('');
+                        alert(response.message);
+                    }
+                });
+        }
+        else {
+            $("#BatchId").empty()
+                         .append('<option value="">-- Select Batch --</option>');
+            $("#DoseNumber").val('');
+        }
+    });
+</script>
+
+

@@ -1,0 +1,334 @@
+﻿@using SyntroVaccPApp.Infrastructure
+@model IEnumerable<SyntroVaccPApp.DTOs.VaccineBatch.VaccineBatchReadDto>
+
+@{
+    ViewData["Title"] = "Vaccine Inventory";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 5;
+}
+
+<div class="container mt-4">
+    @* --- Brand-Themed Success Alert (Matches Patient Registry) --- *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0"
+             style="border-left: 5px solid #00ced1 !important; background-color: white;" role="alert">
+            <i class="bi bi-check-circle-fill me-2" style="color: #00ced1;"></i>
+            <strong style="color: #004d5d;">Success:</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @* --- Page Size Selector --- *@
+    <div class="d-flex justify-content-end mb-3">
+        <div class="btn-group btn-group-sm shadow-sm">
+            <span class="btn btn-light disabled border small">Show:</span>
+            @foreach (var size in new[] { 5, 10, 20 })
+            {
+                <a asp-action="Index" asp-route-page="1" asp-route-pageSize="@size"
+                   class="btn @(pageSize == size ? "text-white" : "btn-outline-secondary")"
+                   style="@(pageSize == size ? "background-color:#004d5d;" : null)">
+                    @size
+                </a>
+            }
+        </div>
+    </div>
+
+    @* --- Header Section --- *@
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="color: #004d5d;" class="fw-bold mb-0">
+                <i class="bi bi-box-seam-fill me-2" style="color: #00ced1;"></i>Vaccine Batches
+            </h2>
+            <p class="text-muted small mb-0">Manage vaccine stock levels and track expiration dates</p>
+        </div>
+
+        @if (User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Clerk))
+        {
+            <button type="button" class="btn text-white shadow-sm px-4"
+                    style="background-color: #004d5d; border-radius: 8px;"
+                    onclick="openCreateBatchModal()">
+                <i class="bi bi-plus-lg me-1"></i> Add New Batch
+            </button>
+        }
+    </div>
+
+    @* --- Responsive Table Card --- *@
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
+                <thead style="background-color: #004d5d; color: white;">
+                    <tr class="text-nowrap">
+                        <th class="ps-4">Batch Number</th>
+                        <th>Vaccine Name</th>
+                        <th>Expiry Date</th>
+                        <th>Status</th>
+                        <th class="text-center pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    @if (Model != null && Model.Any())
+                    {
+                        int rowNumber = (currentPage - 1) * pageSize + 1;
+                        @foreach (var item in Model)
+                        {
+                            bool isExpired = item.ExpiryDate < DateTime.Today;
+                            <tr>
+                                <td class="ps-4 fw-bold" style="color: #004d5d;">@item.BatchNumber</td>
+                                <td class="fw-bold" style="color: #004d5d;">@item.VaccineName</td>
+                                <td>
+                                    <i class="bi bi-calendar3 me-1 text-muted"></i>
+                                    <span class="@(isExpired ? "text-danger fw-bold" : "")">
+                                        @item.ExpiryDate.ToString("dd MMM yyyy")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (isExpired)
+                                    {
+                                        <span class="badge" style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545; border: 1px solid #dc3545;">
+                                            EXPIRED
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge" style="background-color: rgba(0, 206, 209, 0.1); color: #004d5d; border: 1px solid #00ced1;">
+                                            VALID
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group" role="group">
+                                        @* EDIT BUTTON FIX: Wrap BatchId in quotes *@
+                                        <button type="button" class="btn btn-sm text-white"
+                                                style="background-color: #00ced1; border-color: #00ced1;"
+                                                onclick="openEditBatchModal('@item.BatchId')">
+                                            <i class="bi bi-pencil-fill me-1"></i> Edit
+                                        </button>
+
+                                        @if (User.IsInRole(AppRoles.Admin))
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@item.BatchId" method="post" class="d-inline" onsubmit="return confirm('Delete this batch?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                                    <i class="bi bi-trash-fill"></i> Delete
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="bi bi-box-seam me-2" style="color: #00ced1;"></i>
+                                No vaccine batches found. Please add new batches to manage your inventory.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* --- Pagination --- *@
+@if (totalPages > 1)
+{
+    <nav class="mt-4" aria-label="Patient pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link border-0 shadow-sm mx-1 rounded text-dark"
+                   asp-action="Index"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-pageSize="@pageSize">&laquo; Previous</a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(currentPage == i ? "active" : "")">
+                    <a class="page-link border-0 shadow-sm mx-1 rounded @(currentPage == i ? "text-white" : "text-dark")"
+                       style="@(currentPage == i ? "background-color:#00ced1;" : "")"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-pageSize="@pageSize">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link border-0 shadow-sm mx-1 rounded text-dark"
+                   asp-action="Index"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-pageSize="@pageSize">Next &raquo;</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<!-- CREATE BATCH MODAL -->
+<div class="modal fade" id="createBatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white" style="background-color: #004d5d;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-plus-circle me-2" style="color: #00ced1;"></i>Register New Batch
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="createBatchModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT BATCH MODAL -->
+<div class="modal fade" id="editBatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white" style="background-color: #004d5d;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-box-seam me-2" style="color: #00ced1;"></i>Update Vaccine Batch
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="editBatchModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- Update manufacturer & batch number based on selected vaccine ---
+        function updateBatchPrefix() {
+
+            const vaccineSelect = document.getElementById('VaccineId');
+            if (!vaccineSelect) return;
+
+            const selected = vaccineSelect.options[vaccineSelect.selectedIndex];
+            if (!selected) return;
+
+            const manufacturer = selected.dataset.manufacturer || '';
+            const vaccineName = selected.dataset.name || '';
+
+            const manufacturerInput = document.getElementById('manufacturerName');
+            const batchInput = document.getElementById('BatchNumber');
+
+            if (manufacturerInput)
+                manufacturerInput.value = manufacturer;
+
+            const autoBatch = document.getElementById('autoBatch');
+
+            if (autoBatch && autoBatch.checked && batchInput) {
+
+                const mCode = manufacturer.substring(0, 3).toUpperCase();
+                const vCode = vaccineName.substring(0, 3).toUpperCase();
+                const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+
+                batchInput.value = `${mCode}${vCode}-001-${datePart}`;
+            }
+        }
+         
+        // --- Toggle between auto and manual batch number ---
+        function toggleBatchMode() {
+            const isManual = document.getElementById('manualBatch')?.checked;
+            const batchInput = document.getElementById('BatchNumber');
+
+            if (!batchInput) return;
+
+            batchInput.readOnly = !isManual;
+
+            if (!isManual) updateBatchPrefix();
+        }
+
+        // --- Open Create Batch Modal ---
+        function openCreateBatchModal()
+        {
+            var modalElement = document.getElementById('createBatchModal');
+            var myModal = new bootstrap.Modal(modalElement);
+
+            $('#createBatchModalBody').html('<div class="text-center p-5"><div class="spinner-border" style="color: #00ced1;"></div></div>');
+            myModal.show();
+
+            $('#createBatchModalBody').load('/VaccineBatch/Create', function ()
+            {
+                // After partial loads, prefill the manufacturer and batch number
+                updateBatchPrefix();
+
+                     // Attach onchange listener dynamically
+                     const vaccineSelect = document.getElementById('VaccineId');
+                    if (vaccineSelect) 
+                    {
+                        vaccineSelect.addEventListener('change', updateBatchPrefix);
+                    }
+         });
+        }
+
+        // --- Open Edit Batch Modal ---
+        function openEditBatchModal(id) {
+            var modalElement = document.getElementById('editBatchModal');
+            var myModal = new bootstrap.Modal(modalElement);
+
+            $('#editBatchModalBody').html('<div class="text-center p-5"><div class="spinner-border" style="color: #00ced1;"></div><p class="mt-3 text-muted">Loading Batch Data...</p></div>');
+            myModal.show();
+
+            $('#editBatchModalBody').load('/VaccineBatch/Edit/' + id, function () {
+                // Prefill manufacturer & batch after loading
+                updateBatchPrefix();
+
+                // Attach onchange listener to dropdown
+                const vaccineSelect = document.getElementById('VaccineId');
+                if (vaccineSelect) vaccineSelect.onchange = updateBatchPrefix;
+                 
+            });
+        }
+
+        // --- AJAX form submit for Create ---
+        $(document).on('submit', '#createBatchForm', function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if ($(result).find('form').length) {
+                        // Validation errors returned
+                        $('#createBatchModalBody').html(result);
+                        updateBatchPrefix();
+                    } else {
+                        var modalEl = document.getElementById('createBatchModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        // --- AJAX form submit for Edit ---
+        $(document).on('submit', '#editBatchForm', function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if ($(result).find('form').length) {
+                        // Validation errors returned
+                        $('#editBatchModalBody').html(result);
+                        updateBatchPrefix();
+                    } else {
+                        var modalEl = document.getElementById('editBatchModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+                        location.reload();
+                    }
+                }
+            });
+        });
+    </script>
+}
+

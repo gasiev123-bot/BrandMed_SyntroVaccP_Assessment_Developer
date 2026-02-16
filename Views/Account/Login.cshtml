@@ -1,0 +1,88 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - SyntroVaccP</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f4f8;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 77, 93, 0.15);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid rgba(0, 206, 209, 0.2);
+        }
+
+        .brand-header {
+            color: #004d5d;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+            .brand-header span {
+                color: #00ced1;
+            } 
+        .form-control {
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .btn-syntro {
+            background: #004d5d;
+            color: white;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+            border: none;
+        }
+
+            .btn-syntro:hover {
+                background: #00ced1;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 206, 209, 0.4);
+            }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="brand-header">Syntro<span>VaccP</span></h2>
+        <p class="text-center text-muted">Secure Vaccination Portal</p>
+
+        <form asp-action="Login" method="post">
+            <div class="mb-3">
+                <label class="form-label">Clinic Email</label>
+                <input type="email" name="email" class="form-control" placeholder="doctor@brandmed.com" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Secure Password</label>
+                <input type="password" name="password" class="form-control" required />
+            </div>
+            @if (ViewBag.Error != null)
+            {
+                <p class="text-danger small">@ViewBag.Error</p>
+            }
+            <button type="submit" class="btn btn-syntro mt-3">Enter Platform</button>
+        </form>
+    </div>
+</body>
+</html>

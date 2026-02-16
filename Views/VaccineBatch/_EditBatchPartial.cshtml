@@ -1,0 +1,67 @@
+﻿@model SyntroVaccPApp.DTOs.VaccineBatch.VaccineBatchUpdateDto
+@using SyntroVaccPApp.Models
+
+@{
+    var vaccines = ViewBag.Vaccines as List<SyntroVaccPApp.Models.Vaccine> ?? new List<SyntroVaccPApp.Models.Vaccine>();
+}
+
+<div class="modal-body p-4">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <form id="editBatchForm" asp-action="Edit" asp-controller="VaccineBatch" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="BatchId" />
+
+        <div class="row g-3">
+
+            <div class="col-12 border-bottom pb-1 mb-2">
+                <h6 class="fw-bold small" style="color: #00ced1;">UPDATE BATCH DETAILS</h6>
+            </div>
+
+            @* Vaccine Selection *@
+            <div class="col-md-6">
+                <label asp-for="VaccineId" class="form-label small fw-bold" style="color: #004d5d;">Vaccine</label>
+                <select asp-for="VaccineId" class="form-select" id="VaccineId">
+                    <option value="">-- Select Vaccine --</option>
+                    @foreach (var v in vaccines)
+                    {
+                        <option value="@v.VaccineId"
+                                data-manufacturer="@v.Manufacturer">
+                            @v.Name
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="VaccineId" class="text-danger small"></span>
+            </div>
+
+            @* Manufacturer (readonly) *@
+            <div class="col-md-6">
+                <label class="form-label small fw-bold" style="color: #004d5d;">Manufacturer</label>
+                <input type="text" id="manufacturerName" class="form-control" readonly value="@Model.Manufacturer" />
+            </div>
+
+            @* Batch Number *@
+            <div class="col-12">
+                <label asp-for="BatchNumber" class="form-label small fw-bold" style="color: #004d5d;">Batch Number</label>
+                <input asp-for="BatchNumber" id="BatchNumber" class="form-control mt-2" />
+                <span asp-validation-for="BatchNumber" class="text-danger small"></span>
+            </div>
+
+            @* Expiry Date *@
+            <div class="col-md-6">
+                <label asp-for="ExpiryDate" class="form-label small fw-bold" style="color: #004d5d;">Expiry Date</label>
+                <input asp-for="ExpiryDate" class="form-control" type="date"
+                       value="@Model.ExpiryDate.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+            </div>
+
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn text-white px-4 shadow-sm" style="background-color: #004d5d;">
+                Update Batch
+            </button>
+        </div>
+    </form>
+</div>

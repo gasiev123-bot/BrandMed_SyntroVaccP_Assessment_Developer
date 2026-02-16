@@ -1,0 +1,37 @@
+﻿@model SyntroVaccPApp.DTOs.Vaccine.VaccineCreateDto
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        <div class="col-12 border-bottom pb-1 mb-2">
+            <h6 class="fw-bold small" style="color: #00ced1;">NEW VACCINE DEFINITION</h6>
+        </div>
+
+        <div class="col-md-12">
+            <label asp-for="Name" class="form-label small fw-bold" style="color: #004d5d;">Vaccine Name</label>
+            <input asp-for="Name" class="form-control" placeholder="e.g. Hepatitis B" />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Manufacturer" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="Manufacturer" class="form-control" />
+        </div> 
+
+        <div class="col-md-6">
+            <label asp-for="DosesRequired" class="form-label small fw-bold" style="color: #004d5d;">Doses Required</label>
+            <input asp-for="DosesRequired" class="form-control" type="number" min="1" value="1" />
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="DoseIntervalDays" class="form-label small fw-bold" style="color: #004d5d;">Interval (Days)</label>
+            <input asp-for="DoseIntervalDays" class="form-control" type="number" placeholder="Optional" />
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn text-white px-4 shadow-sm" style="background-color: #004d5d;">Add to Catalogue</button>
+    </div>
+</form>

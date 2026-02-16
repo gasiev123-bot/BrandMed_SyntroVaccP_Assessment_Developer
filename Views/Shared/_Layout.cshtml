@@ -1,49 +1,161 @@
-﻿<!DOCTYPE html>
+﻿@using SyntroVaccPApp.Infrastructure @* Path to your AppRoles class *@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SyntroVaccP</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/SyntroVaccP.styles.css" asp-append-version="true" />
+    <!-- Add this to your _Layout.cshtml <head> -->    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> 
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f7;
+            color: #333;
+        }
+
+        /* Modern Navbar Styling */
+        .navbar-syntro {
+            background-color: #004d5d !important; /* BrandMed Deep Teal */
+            border-bottom: 3px solid #00ced1; /* AI Cyan Accent */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.2rem;
+            border-radius: 8px;
+        }
+
+            .nav-link:hover {
+                color: #00ced1 !important;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+        /* Highlight active role/tab */
+        .active-tab {
+            border-bottom: 2px solid #00ced1;
+            color: #00ced1 !important;
+        }
+
+        .user-badge {
+            background: rgba(0, 206, 209, 0.15);
+            color: #00ced1;
+            border: 1px solid #00ced1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+     
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark navbar-syntro mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SyntroVaccP</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                    Syntro<span style="color: #00ced1;">VaccP</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                    @* ms-auto pushes the list to the right *@
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-white  @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active-tab" : "")" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Home
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        @{
+                            bool canViewReports = User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Clerk) || User.IsInRole(AppRoles.Auditor);
+                            bool canViewAudit = User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Auditor);
+                        } 
+                       
+                        @if (User.IsInRole("Admin") || User.IsInRole("Clinician") || User.IsInRole("Clerk") || User.IsInRole(AppRoles.Auditor))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white  @(ViewContext.RouteData.Values["controller"]?.ToString() == "Patient" ? "active-tab" : "")" asp-controller="Patient" asp-action="Index">
+                                    <i class="bi bi-people me-1"></i> Patients
+                                </a>
+                            </li>
+                        }
+
+                        @* Vaccines & Batches: Admin/Clerk Only *@
+                        @if (User.IsInRole("Admin") || User.IsInRole("Clerk"))
+                        {
+                            <li class="nav-item"><a class="nav-link  @(ViewContext.RouteData.Values["controller"]?.ToString() == "Vaccine" ? "active-tab" : "")" asp-controller="Vaccine" asp-action="Index">Vaccines</a></li>
+                            <li class="nav-item"><a class="nav-link  @(ViewContext.RouteData.Values["controller"]?.ToString() == "VaccineBatch" ? "active-tab" : "")" asp-controller="VaccineBatch" asp-action="Index">Batches</a></li>
+                        }
+                        
+                        @if (User.IsInRole("Admin") || User.IsInRole("Clinician") || User.IsInRole(AppRoles.Auditor))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white  @(ViewContext.RouteData.Values["controller"]?.ToString() == "Administration" ? "active-tab" : "")" asp-controller="Administration" asp-action="Index">
+                                    <i class="bi bi-clipboard-plus me-1"></i> Administrations
+                                </a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Clerk"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-file-earmark-bar-graph me-1"></i> Reports
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="Index">Summary Report</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="OverdueList">Overdue Vaccinations</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="BatchStock">Batch Stock</a></li>
+                                </ul>
+                            </li>
+                        }
+                       
+
+                        @if (canViewAudit)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white  @(ViewContext.RouteData.Values["controller"]?.ToString() == "AuditLog" ? "active-tab" : "")" asp-controller="AuditLog" asp-action="Index">
+                                    <i class="bi bi-shield-lock me-1"></i> Audit
+                                </a>
+                            </li>
+                        }
+
+                        @* User Identity Section *@
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item ms-lg-3">
+                                <span class="user-badge d-inline-block">
+                                    <i class="bi bi-person-circle"></i> @User.Identity?.Name
+                                    <small class="d-none d-md-inline">(@(User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value ?? "No Role"))</small>
+                                </span>
+                            </li>
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-outline-light btn-sm rounded-pill px-3" asp-controller="Account" asp-action="Logout">Logout</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
+     
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - SyntroVaccP - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    @* Standard Scripts *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+    
+</body> 
 </html>

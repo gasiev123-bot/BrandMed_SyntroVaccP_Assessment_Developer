@@ -1,0 +1,120 @@
+﻿@using SyntroVaccPApp.DTOs.Patient
+@model PatientUpdateDto
+
+@{
+    ViewData["Title"] = "Update Patient Record";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            @* --- Main Action Card --- *@
+            <div class="card shadow-sm border-0 rounded-3">
+                @* Header matches Navbar Brand Color *@
+                <div class="card-header py-3" style="background-color: #004d5d; color: white;">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-person-gear me-2" style="color: #00ced1;"></i>Update Patient Profile
+                    </h5>
+                </div>
+
+                <div class="card-body p-4 bg-white">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="PatientId" />
+
+                        <div class="row g-4">
+                            @* --- Section: Personal Details --- *@
+                            <div class="col-12 border-bottom pb-2">
+                                <h6 class="fw-bold" style="color: #00ced1; letter-spacing: 1px;">DEMOGRAPHICS</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label fw-bold" style="color: #004d5d;">First Name</label>
+                                <input asp-for="FirstName" class="form-control border-2" style="border-color: rgba(0, 77, 93, 0.1);" />
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label fw-bold" style="color: #004d5d;">Last Name</label>
+                                <input asp-for="LastName" class="form-control border-2" style="border-color: rgba(0, 77, 93, 0.1);" />
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DateOfBirth" class="form-label fw-bold" style="color: #004d5d;">Date of Birth</label>
+                                <input asp-for="DateOfBirth" class="form-control border-2" type="date" style="border-color: rgba(0, 77, 93, 0.1);" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Sex" class="form-label fw-bold" style="color: #004d5d;">Gender</label>
+                                <select asp-for="Sex" class="form-select border-2" style="border-color: rgba(0, 77, 93, 0.1);">
+                                    <option value="">-- Select Gender --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Sex" class="text-danger small"></span>
+                            </div>
+
+                            @* --- Section: Identity & Location --- *@
+                            <div class="col-12 border-bottom pb-2 mt-5">
+                                <h6 class="fw-bold" style="color: #00ced1; letter-spacing: 1px;">IDENTIFICATION</h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="CountryCode" class="form-label fw-bold" style="color: #004d5d;">Country of Issue</label>
+                                <select asp-for="CountryCode" class="form-select border-2" style="border-color: rgba(0, 77, 93, 0.1);"
+                                        asp-items="@(new SelectList(ViewBag.Countries ?? new List<Country>(), "CountryCode", "CountryName"))">
+                                    <option value="">-- Select Country --</option>
+                                </select>
+                                <span asp-validation-for="CountryCode" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="IdentifierType" class="form-label fw-bold" style="color: #004d5d;">ID Type</label>
+                                <select asp-for="IdentifierType" class="form-select border-2" style="border-color: rgba(0, 77, 93, 0.1);">
+                                    <option value="">-- Optional --</option>
+                                    <option value="ID">ID Number</option>
+                                    <option value="Passport">Passport</option>
+                                </select>
+                                <span asp-validation-for="IdentifierType" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="IdentifierValue" class="form-label fw-bold" style="color: #004d5d;">ID/Passport Number</label>
+                                <input asp-for="IdentifierValue" class="form-control border-2" style="border-color: rgba(0, 77, 93, 0.1);" placeholder="Enter number..." />
+                                <span asp-validation-for="IdentifierValue" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        @* --- Footer Actions --- *@
+                        <hr class="my-4" style="border-color: #00ced1; opacity: 0.2;" />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-link text-decoration-none px-0" style="color: #6c757d;">
+                                <i class="bi bi-arrow-left"></i> Discard Changes
+                            </a>
+                            <button type="submit" class="btn text-white px-5 shadow-sm fw-bold"
+                                    style="background-color: #004d5d; border-radius: 8px;">
+                                <i class="bi bi-cloud-check me-2"></i>Update Patient Record
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Audit Information Notice *@
+            <div class="mt-3 p-3 rounded-3" style="background: rgba(0, 206, 209, 0.08); border: 1px dashed #00ced1;">
+                <small style="color: #004d5d;">
+                    <i class="bi bi-shield-check-fill me-1"></i>
+                    <strong>Auditing Enabled:</strong> All modifications to this record are tracked via the [System Audit Log](https://learn.microsoft.com) for compliance purposes.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

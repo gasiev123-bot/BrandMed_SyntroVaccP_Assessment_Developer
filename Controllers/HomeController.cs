@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SyntroVaccP.Models;
+using SyntroVaccPApp.Models;
 
-namespace SyntroVaccP.Controllers
+namespace SyntroVaccPApp.Controllers
 {
     public class HomeController : Controller
     {
@@ -11,13 +11,11 @@ namespace SyntroVaccP.Controllers
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-        }
-
+        } 
         public IActionResult Index()
         {
             return View();
-        }
-
+        } 
         public IActionResult Privacy()
         {
             return View();

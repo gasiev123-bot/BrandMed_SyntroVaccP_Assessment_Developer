@@ -1,0 +1,109 @@
+﻿@model IEnumerable<SyntroVaccPApp.Models.Patient>
+
+@{
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 5;
+    string term = ViewBag.SearchTerm ?? "";
+}
+
+@if (currentPage > totalPages && totalPages > 0)
+{
+    currentPage = totalPages;
+}
+
+<!-- Page size selector -->
+<div class="d-flex justify-content-end mb-2">
+    <div class="btn-group btn-group-sm shadow-sm">
+        <span class="btn btn-light disabled border small">Show:</span>
+        @foreach (var size in new[] { 5, 10, 20 })
+        {
+            <button class="btn @(pageSize == size ? "text-white" : "btn-outline-secondary")"
+                    style="@(pageSize == size ? "background-color:#004d5d;" : "")"
+                    onclick="loadPatientPage(1, @size)">
+                @size
+            </button>
+        }
+    </div>
+</div>
+
+<!-- Table -->
+<div class="table-responsive shadow-sm rounded border mb-2">
+    <table class="table table-hover align-middle mb-0">
+        <thead style="background-color: #004d5d; color: white;">
+            <tr>
+                <th class="text-center">#</th>
+                <th>Name</th>
+                <th class="text-center">Date of Birth</th>
+                <th class="text-center">Gender</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int rowNumber = (currentPage - 1) * pageSize + 1;
+                foreach (var patient in Model)
+                {
+                    <tr class="patient-row" style="cursor:pointer;" onclick="selectPatient(@patient.PatientId)">
+                        <td class="text-center">@rowNumber</td>
+                        <td>@patient.FirstName @patient.LastName</td>
+                        <td class="text-center">@patient.DateOfBirth.ToString("dd MMM yyyy")</td>
+                        <td class="text-center">@patient.Sex</td>
+                    </tr>
+                    rowNumber++;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(term))
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted p-3">
+                        No patients found for "@term".
+                    </td>
+                </tr>
+            }
+            @* If user is paginating past the last page but term is empty, show nothing. *@
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+@if (totalPages > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link border-0 shadow-sm mx-1 rounded text-dark"
+                   href="javascript:loadPatientPage(@(currentPage - 1 < 1 ? 1 : currentPage - 1), @pageSize)">
+                    &laquo; Previous
+                </a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(currentPage == i ? "active" : "")">
+                    <a class="page-link border-0 shadow-sm mx-1 rounded @(currentPage == i ? "text-white" : "text-dark")"
+                       style="@(currentPage == i ? "background-color:#00ced1;" : "")"
+                       href="javascript:loadPatientPage(@i, @pageSize)">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link border-0 shadow-sm mx-1 rounded text-dark"
+                   href="javascript:loadPatientPage(@(currentPage + 1 > totalPages ? totalPages : currentPage + 1), @pageSize)">
+                    Next &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<script>
+    function loadPatientPage(page, pageSize) {
+        var term = $('#patientSearchInput').val();
+        $.get('/Patient/Search', { term: term, page: page, pageSize: pageSize }, function(html){
+            $('#patientSearchResults').html(html);
+        });
+    }
+</script>

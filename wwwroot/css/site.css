@@ -11,7 +11,9 @@ html {
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
-
+.nav-link i {
+    color: #00ced1 !important; /* This matches your "VaccP" Cyan color */
+}
 html {
   position: relative;
   min-height: 100%;
@@ -19,4 +21,23 @@ html {
 
 body {
   margin-bottom: 60px;
+}
+.btn-active-pagesize {
+    background-color: #004d5d;
+    color: #fff;
+}
+#modalPagination {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    z-index: 5;
+    padding: 0.5rem 0;
+}
+#modalBodyContent {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+#modalPagination {
+    background: #f8f9fa;
 }
