@@ -1,0 +1,145 @@
+﻿@model SyntroVaccPApp.DTOs.VaccineBatch.VaccineBatchCreateDto
+@using SyntroVaccPApp.Models
+
+@{
+    // Pull ViewBag data safely
+    var vaccines = ViewBag.Vaccines as List<SyntroVaccPApp.Models.Vaccine> ?? new List<SyntroVaccPApp.Models.Vaccine>();
+}
+
+<div class="modal-body p-4">
+
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <form id="createBatchForm" asp-action="Create" asp-controller="VaccineBatch" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+
+            <div class="col-12 border-bottom pb-1 mb-2">
+                <h6 class="fw-bold small" style="color: #00ced1;">NEW BATCH DETAILS</h6>
+            </div>
+
+            @* --- Vaccine Selection --- *@
+            <div class="col-md-6">
+                <label asp-for="VaccineId" class="form-label small fw-bold" style="color: #004d5d;">Vaccine</label>
+                <select asp-for="VaccineId" class="form-select" id="VaccineId">
+                    <option value="">-- Select Vaccine --</option>
+                    @foreach (var v in vaccines)
+                    {
+                        <option value="@v.VaccineId"
+                                data-manufacturer="@v.Manufacturer">
+                            @v.Name
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="VaccineId" class="text-danger small"></span>
+            </div>
+
+            @* --- Manufacturer (readonly) --- *@
+            <div class="col-md-6">
+                <label class="form-label small fw-bold" style="color: #004d5d;">Manufacturer</label>
+                <input type="text" id="manufacturerName" class="form-control" readonly />
+            </div>
+
+            @* --- Batch Number Mode --- *@
+            <div class="col-12">
+                <label class="form-label small fw-bold" style="color: #004d5d;">Batch Number</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="batchMode" id="autoBatch" value="auto"
+                           checked onchange="toggleBatchMode()" />
+                    <label class="form-check-label" for="autoBatch">Auto-generate</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="batchMode" id="manualBatch" value="manual"
+                           onchange="toggleBatchMode()" />
+                    <label class="form-check-label" for="manualBatch">Manual</label>
+                </div>
+
+                <input asp-for="BatchNumber" id="BatchNumber" class="form-control mt-2" placeholder="Auto-generated" readonly />
+                <span asp-validation-for="BatchNumber" class="text-danger small"></span>
+                <small class="text-muted">Format: MAN-VAC-SEQ-YYMMDD</small>
+            </div>
+
+            @* --- Expiry Date --- *@
+            <div class="col-md-6">
+                <label asp-for="ExpiryDate" class="form-label small fw-bold" style="color: #004d5d;">Expiry Date</label>
+                <input asp-for="ExpiryDate" class="form-control" type="date"
+                       value="@Model.ExpiryDate.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+            </div>
+
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn text-white px-4 shadow-sm" style="background-color: #004d5d;">
+                Save Batch
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function updateManufacturer() {
+            var select = document.getElementById('VaccineId');
+            var manufacturerInput = document.getElementById('manufacturerName');
+            var selectedOption = select.options[select.selectedIndex];
+            manufacturerInput.value = selectedOption.getAttribute('data-manufacturer') || '';
+        }
+        function updateBatchPrefix() {
+            const vaccineSelect = document.getElementById('VaccineId');
+            const batchInput = document.getElementById('BatchNumber');
+            const manufacturerInput = document.getElementById('manufacturerName');
+
+            if (!vaccineSelect) return;
+
+            const selected = vaccineSelect.options[vaccineSelect.selectedIndex];
+            if (!selected) return;
+
+            const manufacturer = selected.getAttribute('data-manufacturer') || '';
+            const vaccineName = selected.getAttribute('data-name') || '';
+
+            if (manufacturerInput)
+                manufacturerInput.value = manufacturer;
+
+            if (document.getElementById('autoBatch')?.checked && batchInput) {
+                const manufacturerCode = manufacturer.substring(0,3).toUpperCase();
+                const vaccineCode = vaccineName.substring(0,3).toUpperCase();
+
+                const date = new Date();
+                const datePart =
+                    date.getFullYear().toString().slice(2) +
+                    ('0' + (date.getMonth() + 1)).slice(-2) +
+                    ('0' + date.getDate()).slice(-2);
+
+                batchInput.value = manufacturerCode + vaccineCode + '-001-' + datePart;
+                batchInput.readOnly = true;
+            }
+        }
+
+        function toggleBatchMode() {
+            const isManual = document.getElementById('manualBatch')?.checked;
+            const batchInput = document.getElementById('BatchNumber');
+
+            if (!batchInput) return;
+
+            batchInput.readOnly = !isManual;
+
+            if (!isManual) {
+                updateBatchPrefix();
+            }
+        }
+
+        
+        // Run once after modal loads
+        document.addEventListener('DOMContentLoaded', function()
+        {
+            updateManufacturer();
+            updateBatchPrefix();
+        }
+        
+        );
+    </script>
+}

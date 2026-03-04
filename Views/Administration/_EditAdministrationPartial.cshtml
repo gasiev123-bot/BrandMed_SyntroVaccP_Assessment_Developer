@@ -1,0 +1,236 @@
+﻿@model SyntroVaccPApp.DTOs.Administration.AdministrationUpdateDto
+ 
+<form asp-action="Edit"
+      asp-controller="Administration"
+      method="post"
+      id="editAdministrationForm">
+
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="AdministrationId" />
+    <input type="hidden" asp-for="PatientId" />
+
+    <div class="modal-body pt-2">
+
+        <!-- Validation Summary -->
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger py-2 small mb-3">
+        </div>
+
+        <div class="row g-3">
+
+            <!-- Patient (Read Only) -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Patient</label>
+                <input type="text"
+                       class="form-control bg-light"
+                       value="@Model.PatientName"
+                       readonly />
+            </div>
+
+            <!-- Vaccine -->
+            <div class="col-md-6">
+                <label asp-for="VaccineId" class="form-label fw-semibold">Vaccine</label>
+                <select asp-for="VaccineId"
+                        asp-items="ViewBag.Vaccines"
+                        class="form-select">
+                    <option value="">-- Select Vaccine --</option>
+                </select>
+                <span asp-validation-for="VaccineId"
+                      class="text-danger small"></span>
+            </div>
+
+            <!-- Batch -->
+            <div class="col-md-6">
+                <label asp-for="BatchId" class="form-label fw-semibold">Batch number</label>
+                <select asp-for="BatchId"
+                        asp-items="ViewBag.Batches"
+                        class="form-select">
+                    <option value="">-- Select Batch --</option>
+                </select>
+                <span asp-validation-for="BatchId"
+                      class="text-danger small"></span>
+            </div>
+
+            <!-- Dose Number -->
+            <div class="col-md-6">
+                <label asp-for="DoseNumber" class="form-label fw-semibold">Dose</label>
+                <input asp-for="DoseNumber"
+                       class="form-control"
+                       min="1" />
+                <span asp-validation-for="DoseNumber"
+                      class="text-danger small"></span>
+            </div>
+
+            <!-- Administered On -->
+            <div class="col-md-6">
+                <label asp-for="AdministeredOn" class="form-label fw-semibold">Administered On</label>
+                <input asp-for="AdministeredOn"
+                       type="date"
+                       class="form-control" />
+                <span asp-validation-for="AdministeredOn"
+                      class="text-danger small"></span>
+            </div>
+
+            <!-- Clinician -->
+            <div class="col-md-6">
+                <label asp-for="ClinicianId" class="form-label fw-semibold">Clinician</label>
+                <select asp-for="ClinicianId"
+                        asp-items="ViewBag.Clinicians"
+                        class="form-select">
+                    <option value="">-- Select Clinician --</option>
+                </select>
+                <span asp-validation-for="ClinicianId"
+                      class="text-danger small"></span>
+            </div>
+
+            <!-- Facility -->
+            <div class="col-md-6">
+                <label asp-for="FacilityId" class="form-label fw-semibold">Facility</label>
+                <select asp-for="FacilityId"
+                        asp-items="ViewBag.Facilities"
+                        class="form-select">
+                    <option value="">-- Select Facility --</option>
+                </select>
+                <span asp-validation-for="FacilityId"
+                      class="text-danger small"></span>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+                <label asp-for="Notes" class="form-label fw-semibold"></label>
+                <textarea asp-for="Notes"
+                          class="form-control"
+                          rows="3"
+                          maxlength="200"></textarea>
+                <span asp-validation-for="Notes"
+                      class="text-danger small"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-footer border-0 pt-0">
+
+        <button type="button"
+                class="btn btn-outline-secondary px-4"
+                data-bs-dismiss="modal">
+            Cancel
+        </button>
+
+        <button type="submit"
+                class="btn btn-primary px-4 fw-semibold shadow-sm"
+                style="background-color:#004d5d;"
+                id="saveEditBtn">
+            <i class="bi bi-check-circle me-1"></i>
+            Update Record
+        </button>
+
+    </div>
+</form>
+
+<style>
+    /* Match Patients Page Look */
+    .modal-content {
+        border-radius: 12px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, .15);
+    }
+
+    .btn-primary {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+            transform: translateY(-1px);
+        }
+
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+                $(document).ready(function () {
+
+            const vaccineDropdown = $("#VaccineId");
+            const batchDropdown = $("#BatchId");
+
+            function loadBatches(vaccineId, selectedBatchId = null) {
+
+                batchDropdown.empty();
+                batchDropdown.append('<option value="">-- Select Batch --</option>');
+
+                if (!vaccineId) return;
+
+                $.get("/Administration/GetBatchesByVaccine",
+                    { vaccineId: vaccineId },
+                    function (data) {
+
+                        if (data.length === 0) {
+                            batchDropdown.append('<option disabled>No available batches</option>');
+                            return;
+                        }
+
+                        $.each(data, function (i, batch) {
+                            const selected = selectedBatchId && batch.batchId === selectedBatchId
+                                ? "selected"
+                                : "";
+
+                            batchDropdown.append(
+                                `<option value="${batch.batchId}" ${selected}>
+                                    ${batch.batchNumber}
+                                 </option>`
+                            );
+                        });
+                    });
+            }
+
+            // When vaccine changes
+            vaccineDropdown.change(function () {
+                const vaccineId = $(this).val();
+                loadBatches(vaccineId);
+            });
+
+            // On Edit modal load, preload correct batches
+            const currentVaccine = vaccineDropdown.val();
+            const currentBatch = batchDropdown.val();
+
+            if (currentVaccine) {
+                loadBatches(currentVaccine, parseInt(currentBatch));
+            }
+        });
+
+        $("#editAdministrationForm").submit(function (e) {
+            e.preventDefault();
+
+            var form = $(this);
+
+            if (!form.valid()) return;
+
+            $.ajax({
+                url: form.attr("action"),
+                type: "POST",
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        $("#editAdministrationModal .modal-content")
+                            .html(response);
+                    }
+                }
+            });
+        });
+    </script>
+}

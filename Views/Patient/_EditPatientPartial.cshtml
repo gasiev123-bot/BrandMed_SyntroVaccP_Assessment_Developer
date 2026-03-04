@@ -1,0 +1,59 @@
+﻿@using SyntroVaccPApp.DTOs.Patient
+@model PatientUpdateDto
+
+<form asp-action="Edit" method="post" id="editPatientForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="PatientId" />
+
+    <div class="row g-3">
+        <div class="col-12 border-bottom pb-1 mb-2">
+            <h6 class="fw-bold small" style="color: #00ced1;">DEMOGRAPHICS</h6>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="FirstName" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="FirstName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="LastName" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="LastName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="DateOfBirth" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="DateOfBirth" class="form-control" type="date" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Sex" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <select asp-for="Sex" class="form-select">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="col-12 border-bottom pb-1 mt-4 mb-2">
+            <h6 class="fw-bold small" style="color: #00ced1;">IDENTIFICATION</h6>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="CountryCode" class="form-label small fw-bold" style="color: #004d5d;">Country</label>
+            <select asp-for="CountryCode" class="form-select" asp-items="@(new SelectList(ViewBag.Countries, "CountryCode", "CountryName"))"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="IdentifierType" class="form-label small fw-bold" style="color: #004d5d;">Type</label>
+            <select asp-for="IdentifierType" class="form-select">
+                <option value="ID">ID Number</option>
+                <option value="Passport">Passport</option>
+            </select>
+        </div> 
+        <div class="col-md-4">
+            <label asp-for="IdentifierValue" class="form-label fw-bold" style="color: #004d5d;">ID/Passport Number</label>
+            <input asp-for="IdentifierValue" class="form-control border-2" style="border-color: rgba(0, 77, 93, 0.1);" placeholder="Enter number..." />
+            <span asp-validation-for="IdentifierValue" class="text-danger small"></span>
+        </div>
+
+    </div>
+
+    <div class="mt-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn text-white px-4 shadow-sm" style="background-color: #004d5d;">Update Profile</button>
+    </div>
+</form>

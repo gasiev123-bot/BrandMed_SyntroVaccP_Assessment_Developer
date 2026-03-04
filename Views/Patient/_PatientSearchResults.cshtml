@@ -1,0 +1,25 @@
+﻿@model IEnumerable<SyntroVaccPApp.Models.Patient>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center py-2 small">
+        No patients found.
+    </div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var patient in Model)
+        {
+            <a href="javascript:void(0);"
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+               onclick="selectPatient(@patient.PatientId)">
+                <div>
+                    <strong>@patient.FirstName @patient.LastName</strong><br />
+                    <small class="text-muted">DOB: @patient.DateOfBirth.ToString("dd MMM yyyy")</small>
+                </div>
+                <span class="badge bg-primary rounded-pill">@patient.Sex</span>
+            </a>
+        }
+    </div>
+}

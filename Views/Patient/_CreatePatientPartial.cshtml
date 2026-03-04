@@ -1,0 +1,80 @@
+﻿@using SyntroVaccPApp.DTOs.Patient
+@model PatientCreateDto
+
+<form asp-action="Create" method="post" id="createPatientForm">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        @* --- Section 1: Demographics --- *@
+        <div class="col-12 border-bottom pb-1 mb-2">
+            <h6 class="fw-bold small" style="color: #00ced1; letter-spacing: 1px;">DEMOGRAPHICS</h6>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="FirstName" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="FirstName" class="form-control shadow-sm" placeholder="First Name" />
+            <span asp-validation-for="FirstName" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="LastName" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="LastName" class="form-control shadow-sm" placeholder="Last Name" />
+            <span asp-validation-for="LastName" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="DateOfBirth" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <input asp-for="DateOfBirth" class="form-control shadow-sm" type="date" />
+            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Sex" class="form-label small fw-bold" style="color: #004d5d;"></label>
+            <select asp-for="Sex" class="form-select shadow-sm">
+                <option value="">-- Select Gender --</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <span asp-validation-for="Sex" class="text-danger small"></span>
+        </div>
+
+        @* --- Section 2: Identification (Requirement 4 & 5) --- *@
+        <div class="col-12 border-bottom pb-1 mt-4 mb-2">
+            <h6 class="fw-bold small" style="color: #00ced1; letter-spacing: 1px;">IDENTIFICATION</h6>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="CountryCode" class="form-label small fw-bold" style="color: #004d5d;">Country of Issue</label>
+            <select asp-for="CountryCode" class="form-select shadow-sm"
+                    asp-items="@(new SelectList(ViewBag.Countries, "CountryCode", "CountryName"))">
+                <option value="">-- Select --</option>
+            </select>
+            <span asp-validation-for="CountryCode" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="IdentifierType" class="form-label small fw-bold" style="color: #004d5d;">ID Type</label>
+            <select asp-for="IdentifierType" class="form-select shadow-sm">
+                <option value="">-- Optional --</option>
+                <option value="ID">ID Number</option>
+                <option value="Passport">Passport</option>
+            </select>
+            <span asp-validation-for="IdentifierType" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="IdentifierValue" class="form-label small fw-bold" style="color: #004d5d;">ID/Passport Number</label>
+            <input asp-for="IdentifierValue" class="form-control shadow-sm" placeholder="Enter number..." />
+            <span asp-validation-for="IdentifierValue" class="text-danger small"></span> 
+        </div>
+    </div>
+
+    @* --- Action Buttons --- *@
+    <div class="mt-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary px-4 border-1" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+        <button type="submit" class="btn text-white px-4 shadow-sm" style="background-color: #004d5d; border-radius: 8px;">
+            <i class="bi bi-person-check-fill me-1"></i> Save Patient
+        </button>
+    </div>
+</form>

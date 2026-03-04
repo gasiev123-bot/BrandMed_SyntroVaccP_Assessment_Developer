@@ -1,0 +1,82 @@
+﻿@model SyntroVaccPApp.DTOs.VaccineBatch.VaccineBatchUpdateDto
+
+@{
+    ViewData["Title"] = "Edit Batch";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                @* Header with App Deep Teal *@
+                <div class="card-header py-3" style="background-color: #004d5d; color: white;">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2" style="color: #00ced1;"></i>Edit Vaccine Batch
+                    </h5>
+                </div>
+
+                <div class="card-body p-4 bg-white">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="BatchId" />
+
+                        <div class="row g-3">
+                            @* Vaccine Selection *@
+                            <div class="col-12 mb-3">
+                                <label asp-for="VaccineId" class="form-label fw-bold" style="color: #004d5d;">Target Vaccine</label>
+                                <select asp-for="VaccineId" class="form-select border-2"
+                                        style="border-color: rgba(0, 77, 93, 0.1);"
+                                        asp-items="@(new SelectList(ViewBag.Vaccines, "VaccineId", "Name"))">
+                                    <option value="">-- Select Vaccine --</option>
+                                </select>
+                                <span asp-validation-for="VaccineId" class="text-danger small"></span>
+                            </div>
+
+                            @* Batch Number *@
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="BatchNumber" class="form-label fw-bold" style="color: #004d5d;">Batch Number</label>
+                                <input asp-for="BatchNumber" class="form-control border-2"
+                                       style="border-color: rgba(0, 77, 93, 0.1);" placeholder="e.g. BATCH-2024-X" />
+                                <span asp-validation-for="BatchNumber" class="text-danger small"></span>
+                            </div>
+
+                            @* Expiry Date *@
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ExpiryDate" class="form-label fw-bold" style="color: #004d5d;">Expiry Date</label>
+                                <input asp-for="ExpiryDate" type="date" class="form-control border-2"
+                                       style="border-color: rgba(0, 77, 93, 0.1);"
+                                       value="@Model.ExpiryDate.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: #00ced1; opacity: 0.2;" />
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-link text-decoration-none p-0" style="color: #004d5d;">
+                                <i class="bi bi-arrow-left"></i> Back to Inventory
+                            </a>
+                            <div>
+                                <button type="submit" class="btn px-4 text-white shadow-sm" style="background-color: #004d5d;">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Quick Info for Admin *@
+            <div class="mt-3 p-3 rounded-3" style="background: rgba(0, 206, 209, 0.1); border: 1px dashed #00ced1;">
+                <small style="color: #004d5d;">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    <strong>Note:</strong> Changing the expiry date will immediately affect the <strong>Administration</strong> module's validation rules.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

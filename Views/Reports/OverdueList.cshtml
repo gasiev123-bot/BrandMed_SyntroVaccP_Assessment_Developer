@@ -1,0 +1,67 @@
+﻿@model IEnumerable<SyntroVaccPApp.DTOs.Reports.OverdueReportDto>
+
+<div class="container mt-4">
+    <div class="mb-4 pb-2 border-bottom" style="border-color: #00ced1 !important;">
+        <h2 style="color: #004d5d;" class="fw-bold mb-0">
+            <i class="bi bi-clock-history me-2" style="color: #00ced1;"></i>Overdue Vaccinations
+        </h2>
+        <p class="text-muted">Patients requiring immediate follow-up doses</p>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded-3 border-0">
+        <table class="table table-hover align-middle mb-0 bg-white">
+            <thead style="background-color: #004d5d; color: white;">
+                <tr>
+                    <th class="ps-4">Patient</th>
+                    <th>Vaccine</th>
+                    <th>Last Dose</th>
+                    <th>Target Date</th>
+                    <th>Days Overdue</th>
+                    <th class="pe-4 text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold" style="color: #004d5d;">
+                                    @item.PatientName
+                                </div>
+                                @if (!string.IsNullOrEmpty(item.ContactNumber))
+                                {
+                                    <small class="text-muted">@item.ContactNumber</small>
+                                }
+                            </td>
+                            <td>@item.VaccineName</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    Dose #@item.LastDoseNumber
+                                </span>
+                            </td>
+                            <td class="fw-bold" style="color: #00ced1;">
+                                @item.DueDate?.ToString("dd MMM yyyy")
+                            </td>
+                            <td>
+                                @item.DaysOverdue
+                            </td>
+                            <td class="pe-4 text-end">
+                                Action via patient record                               
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            No overdue records found. All patients are up to date!
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

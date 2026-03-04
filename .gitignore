@@ -1,4 +1,7 @@
-﻿# Build output
+﻿# Do NOT ignore backup
+!Backup/
+
+# Build output
 bin/
 obj/
 

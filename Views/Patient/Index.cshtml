@@ -1,0 +1,413 @@
+﻿@using SyntroVaccPApp.Infrastructure
+@using SyntroVaccPApp.Models
+@model IEnumerable<Patient>
+
+@{
+    ViewData["Title"] = "Patient Registry";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 5;
+}
+
+<div class="container mt-4">
+    @* --- Success Notification --- *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0"
+             style="border-left: 5px solid #00ced1 !important; background-color: white;" role="alert">
+            <i class="bi bi-check-circle-fill me-2" style="color: #00ced1;"></i>
+            <strong style="color: #004d5d;">Success:</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @* --- Header --- *@
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0" style="color: #004d5d;">
+                <i class="bi bi-people-fill me-2" style="color: #00ced1;"></i>Patient Registry
+            </h2>
+            <p class="text-muted small mb-0">Manage demographic data and view immunisation history</p>
+        </div>
+
+        @if (User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Clerk))
+        {
+            <button type="button" class="btn text-white shadow-sm px-4"
+                    style="background-color: #004d5d; border-radius: 8px;"
+                    onclick="openCreatePatientModal()">
+                <i class="bi bi-person-plus-fill me-1"></i> Add New Patient
+            </button>
+        }
+    </div>
+
+    @* --- Page Size Selector --- *@
+    <div class="d-flex justify-content-end mb-3">
+        <div class="btn-group btn-group-sm shadow-sm">
+            <span class="btn btn-light disabled border small">Show:</span>
+
+            @foreach (var size in new[] { 5, 10, 20 })
+            {
+                <a asp-action="Index" asp-route-page="1" asp-route-pageSize="@size"
+                   class="btn @(pageSize == size ? "text-white" : "btn-outline-secondary")"
+                   style="@(pageSize == size ? "background-color:#004d5d;" : null)">
+                    @size
+                </a>
+            }
+        </div>
+    </div>
+
+    @* --- Search & Filter Bar --- *@
+    <div class="card shadow-sm border-0 mb-3 rounded-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <!-- Search -->
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Search Patient</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="patientSearch"
+                               class="form-control border-start-0"
+                               placeholder="Name, surname..."
+                               onkeyup="filterPatients()" />
+                    </div>
+                </div>
+
+                <!-- Gender Filter -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Gender</label>
+                    <select id="genderFilter" class="form-select" onchange="filterPatients()">
+                        <option value="">All</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+
+                <!-- Age Filter -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Age Group</label>
+                    <select id="ageFilter" class="form-select" onchange="filterPatients()">
+                        <option value="">All</option>
+                        <option value="child">0 - 12</option>
+                        <option value="teen">13 - 17</option>
+                        <option value="adult">18+</option>
+                    </select>
+                </div>
+
+                <!-- Clear Button -->
+                <div class="col-md-2">
+                    <button class="btn w-100 text-white"
+                            style="background-color:#004d5d;"
+                            onclick="clearFilters()">
+                        <i class="bi bi-x-circle me-1"></i> Clear
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    @* --- Patient Table --- *@
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
+                <thead style="background-color: #004d5d; color: white;">
+                    <tr class="text-nowrap">
+                        <th class="ps-4">First Name</th>
+                        <th>Last Name</th>
+                        <th>Date of Birth</th>
+                        <th>Gender</th>
+                        <th class="text-center pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                     @if (Model != null && Model.Any())
+                    {
+                         int rowNumber = (currentPage - 1) * pageSize + 1;
+                            @foreach (var patient in Model)
+                            {
+                            <tr data-name="@($"{patient.FirstName} {patient.LastName}".ToLower())"
+                                data-gender="@patient.Sex"
+                                data-age="@(DateTime.Now.Year - patient.DateOfBirth.Year)">
+                                    <td class="ps-4 fw-bold" style="color: #004d5d;">@patient.FirstName</td>
+                                    <td class="fw-bold" style="color: #004d5d;">@patient.LastName</td>
+                                    <td>
+                                        <i class="bi bi-calendar3 me-1 text-muted"></i>
+                                        @patient.DateOfBirth.ToString("dd MMM yyyy")
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background-color: rgba(0, 206, 209, 0.1); color: #004d5d; border: 1px solid #00ced1;">
+                                            @patient.Sex
+                                        </span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm text-white"
+                                                    style="background-color: #00ced1; border-color: #00ced1;"
+                                                    onclick="openDetailsModal(@patient.PatientId, '@patient.FirstName @patient.LastName')">
+                                                <i class="bi bi-eye-fill"></i> Details
+                                            </button>
+
+                                            @if (User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Clerk))
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                                        onclick="openEditPatientModal(@patient.PatientId)">
+                                                    <i class="bi bi-pencil-fill"></i> Edit
+                                                </button>
+                                            }
+
+                                            @if (User.IsInRole(AppRoles.Admin))
+                                            {
+                                                <form asp-action="Delete" asp-route-id="@patient.PatientId" method="post" class="d-inline" onsubmit="return confirm('Delete patient record?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                                        <i class="bi bi-trash-fill"></i>Delete
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                    }   
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="bi bi-person-x-fill me-2" style="color: #00ced1;"></i>No patients found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* --- Pagination --- *@
+    @if (totalPages > 1)
+    {
+        <nav class="mt-4" aria-label="Patient pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link border-0 shadow-sm mx-1 rounded text-dark"
+                       asp-action="Index"
+                       asp-route-page="@(currentPage - 1)"
+                       asp-route-pageSize="@pageSize">&laquo; Previous</a>
+                </li>
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(currentPage == i ? "active" : "")">
+                        <a class="page-link border-0 shadow-sm mx-1 rounded @(currentPage == i ? "text-white" : "text-dark")"
+                           style="@(currentPage == i ? "background-color:#00ced1;" : "")"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-pageSize="@pageSize">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link border-0 shadow-sm mx-1 rounded text-dark"
+                       asp-action="Index"
+                       asp-route-page="@(currentPage + 1)"
+                       asp-route-pageSize="@pageSize">Next &raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@* --- Modals (Create / Details / Edit) --- *@
+<div class="modal fade" id="createPatientModal" tabindex="-1" aria-hidden="true" >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white" style="background-color: #004d5d;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-plus-fill me-2" style="color: #00ced1;"></i>Add New Patient
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="createPatientModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="patientDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white" style="background-color: #004d5d;">
+                <h5 class="modal-title fw-bold" id="modalTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div id="modalBodyContent" class="p-3"></div>
+                <div id="modalPagination" class="p-2 border-top bg-light"></div>
+            </div>
+        </div>
+    </div>
+</div> 
+
+<div class="modal fade" id="editPatientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white" style="background-color: #004d5d;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-gear me-2" style="color: #00ced1;"></i>Update Patient Profile
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="editPatientModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+         // Attach this when the modal content loads
+        $(document).on('submit', '#createPatientForm', function(e) 
+        {
+            e.preventDefault(); // prevent normal POST
+
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    // If response contains validation errors, it will be HTML of the partial
+               
+                    $('#createPatientModalBody').html(response);
+
+                    // Optionally, check if patient creation succeeded (e.g., TempData success)
+                    if ($(response).find('.alert-success').length > 0) {
+                        $('#createPatientModal').modal('hide');
+                        window.location.reload(); // refresh the patient index to show new patient
+                    }
+                },
+                error: function() {
+                    alert('This patient already exists. please check id number/passport.');
+                }
+            });
+        });
+
+
+        function openDetailsModal(patientId, patientName) 
+        {
+            // Set modal title
+            $('#modalTitle').html('Patient Record: ' + patientName);
+
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
+            modal.show();
+
+            // Load first page, default size 5
+            loadPatientDetails(patientId, 1, 5);
+        }
+
+       // Edit Patient AJAX
+        $(document).on('submit', '#editPatientForm', function (e) {
+            e.preventDefault(); // prevent normal POST
+
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (response) {
+                    // If response contains validation errors, partial will return HTML
+                    $('#editPatientModalBody').html(response);
+
+                    // Check if the response has a success alert
+                    if ($(response).find('.alert-success').length > 0) {
+                        $('#editPatientModal').modal('hide');
+                        // Optionally, refresh the table to reflect updates
+                        window.location.reload();
+                    }
+                },
+              
+            });
+        });
+
+
+        function openCreatePatientModal() {
+            var modal = new bootstrap.Modal(document.getElementById('createPatientModal'));
+            modal.show();
+            $('#createPatientModalBody').html('<div class="text-center p-5"><div class="spinner-border" style="color: #00ced1;"></div><p class="mt-2 text-muted">Opening Registry...</p></div>');
+            $('#createPatientModalBody').load('/Patient/Create');
+        }
+  
+        function openEditPatientModal(id) {
+            $('#editPatientModalBody').html('<div class="text-center p-5"><div class="spinner-border" style="color: #00ced1;"></div><p class="mt-3 text-muted">Loading Patient Data...</p></div>');
+            var modal = new bootstrap.Modal(document.getElementById('editPatientModal'));
+            modal.show();
+            $('#editPatientModalBody').load('/Patient/Edit/' + id);
+        }
+
+        function loadPatientDetails(patientId, page, pageSize) {
+            var modalBody = $('#modalBodyContent');
+            var modalPagination = $('#modalPagination');
+
+            // Spinner while loading
+            modalBody.html('<div class="text-center p-4"><div class="spinner-border" style="color:#00ced1;"></div><p class="mt-2 text-muted">Loading...</p></div>');
+            modalPagination.html('');
+
+            $.get(`/Patient/Details/${patientId}?page=${page}&pageSize=${pageSize}`, function(data) {
+                // Extract partial content
+                var content = $(data).filter('#patientDetailsWrapper');
+                if (!content.length) content = $(data).find('#patientDetailsWrapper');
+
+                // Inject table + page selector
+                modalBody.html(content.html());
+
+                // Optional: inject pagination into modal footer
+                var pagination = $(content).find('#paginationContent').html();
+                modalPagination.html(pagination);
+            }).fail(function() {
+                modalBody.html('<div class="text-center text-danger p-4">Error loading patient details</div>');
+            });
+        }
+
+        function filterPatients()
+        {
+
+            var searchValue = $('#patientSearch').val().toLowerCase();
+            var genderValue = $('#genderFilter').val();
+            var ageValue = $('#ageFilter').val();
+
+            $('table tbody tr').each(function () {
+
+                var row = $(this);
+                var name = row.data('name');
+                var gender = row.data('gender');
+                var age = parseInt(row.data('age'));
+
+                var matchesSearch = !searchValue || name.includes(searchValue);
+                var matchesGender = !genderValue || gender === genderValue;
+
+                var matchesAge = true;
+                if (ageValue === "child") matchesAge = age <= 12;
+                else if (ageValue === "teen") matchesAge = age >= 13 && age <= 17;
+                else if (ageValue === "adult") matchesAge = age >= 18;
+
+                if (matchesSearch && matchesGender && matchesAge) {
+                    row.show();
+                } else {
+                    row.hide();
+                }
+            });
+        }
+
+        function clearFilters() {
+            $('#patientSearch').val('');
+            $('#genderFilter').val('');
+            $('#ageFilter').val('');
+            filterPatients();
+        }
+
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

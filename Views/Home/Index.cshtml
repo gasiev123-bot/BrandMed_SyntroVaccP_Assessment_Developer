@@ -2,7 +2,173 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- ================= HERO SECTION ================= -->
+<div class="p-5 mb-5 bg-white rounded-3 shadow-sm"
+     style="border-left:6px solid #00ced1;">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+
+            <!-- Left Content -->
+            <div class="col-lg-8 py-3">
+                <h1 class="display-5 fw-bold mb-3"
+                    style="color:#004d5d;">
+                    Global Vaccination Intelligence
+                </h1>
+
+                <p class="fs-5 text-muted">
+                    SyntroVaccP is a world-class platform designed to record, track, and monitor
+                    patient vaccinations across international borders. By centralising data,
+                    we empower healthcare providers to detect trends, identify early warning
+                    signs, and accelerate the path to global cures.
+                </p>
+
+                <div class="mt-4">
+                    <a asp-controller="Patient"
+                       asp-action="Index"
+                       class="btn btn-lg px-5 text-white shadow-sm"
+                       style="background-color:#004d5d; border-radius:8px;">
+                        Access Patient Registry
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Image -->
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <img src="~/images/thevialstore-covid-19-7440167_1920.jpg"
+                     alt="Medical Researcher"
+                     class="img-fluid rounded-3 shadow-sm border"
+                     style="max-height:350px; object-fit:cover;">
+            </div>
+
+        </div>
+    </div>
 </div>
+
+
+<!-- ================= FEATURES SECTION ================= -->
+<div class="row g-4 py-4 row-cols-1 row-cols-lg-3">
+
+    <!-- Feature 1 -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm feature-card">
+            <img src="~/images/VaccineVials.jpg"
+                 class="card-img-top"
+                 alt="Vaccine vials"
+                 style="height:200px; object-fit:cover;">
+
+            <div class="card-body">
+                <div class="mb-3 d-inline-flex p-2 rounded-2 text-white"
+                     style="background-color:#004d5d;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+
+                <h3 class="fs-4 fw-semibold"
+                    style="color:#004d5d;">
+                    Secure Recording
+                </h3>
+
+                <p class="text-muted">
+                    Capture every dose with precision. Our system tracks batch numbers,
+                    manufacturers, and clinician details to ensure a complete audit trail
+                    for every patient.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm feature-card">
+            <img src="~/images/GlobalMap.jpg"
+                 class="card-img-top"
+                 alt="Global map"
+                 style="height:200px; object-fit:cover;">
+
+            <div class="card-body">
+                <div class="mb-3 d-inline-flex p-2 rounded-2 text-white"
+                     style="background-color:#004d5d;">
+                    <i class="bi bi-globe"></i>
+                </div>
+
+                <h3 class="fs-4 fw-semibold"
+                    style="color:#004d5d;">
+                    Global Tracking
+                </h3>
+
+                <p class="text-muted">
+                    Detect early-onset outbreaks and monitor vaccine efficacy in real-time.
+                    By analyzing data from across the globe, we identify potential health
+                    risks before they become crises.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm feature-card">
+            <img src="~/images/MedicalResearch.jpg"
+                 class="card-img-top"
+                 alt="Medical research"
+                 style="height:200px; object-fit:cover;">
+
+            <div class="card-body">
+                <div class="mb-3 d-inline-flex p-2 rounded-2 text-white"
+                     style="background-color:#004d5d;">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+
+                <h3 class="fs-4 fw-semibold"
+                    style="color:#004d5d;">
+                    Advanced Analytics
+                </h3>
+
+                <p class="text-muted">
+                    Data-driven insights to accelerate cures. We provide researchers with
+                    anonymized metrics needed to evaluate vaccine performance and
+                    patient outcomes.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ================= CALL TO ACTION ================= -->
+<div class="container px-4 py-5 mt-5 text-center text-white rounded-3 shadow"
+     style="background-color:#004d5d;">
+
+    <h2 class="pb-3 mb-4"
+        style="border-bottom:2px solid #00ced1;">
+        Ready to make an impact?
+    </h2>
+
+    <a asp-controller="Patient"
+       asp-action="Index"
+       class="btn btn-lg px-5 text-white shadow-sm"
+       style="background-color:#00ced1; border-radius:8px;">
+        Get Started
+    </a>
+
+</div>
+
+
+<!-- ================= HOVER EFFECT STYLING ================= -->
+<style>
+    .feature-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        border-radius: 10px;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 77, 93, 0.15);
+        }
+
+    .btn:hover {
+        opacity: 0.9;
+        transition: 0.2s ease-in-out;
+    }
+</style>
+

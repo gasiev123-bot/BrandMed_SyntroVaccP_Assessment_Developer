@@ -1,0 +1,117 @@
+﻿@model PatientDetailsViewModel
+@using SyntroVaccPApp.Models
+
+@{
+   
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 5;
+}
+
+<div id="patientDetailsWrapper">
+    <!-- Page Size Selector -->
+    @if (Model.Administrations != null && Model.Administrations.Any())
+    {
+        <div class="d-flex justify-content-end mb-2">
+            <div class="btn-group btn-group-sm shadow-sm">
+                <span class="btn btn-light disabled border small">Show:</span>
+                @foreach (var size in new[] { 5, 10, 20 })
+                {
+                    <button class="btn @(Model.PageSize == size ? "text-white" : "btn-outline-secondary")"
+                            style="@(Model.PageSize == size ? "background-color:#004d5d;" : null)"
+                            onclick="loadPatientDetails(@Model.Patient.PatientId, @(Model.CurrentPage - 1), @Model.PageSize)">
+                        @size
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Table -->
+    <div style="max-height:50vh; overflow-y:auto;">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background-color: #004d5d; color: white;">
+                <tr>
+                    <th>Vaccine</th>
+                    <th>Date Administered</th>
+                    <th>Clinician</th>
+                    <th>Facility</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model?.Administrations != null && Model.Administrations.Any())
+                    {
+                         int rowNumber = (currentPage - 1) * pageSize + 1;
+
+                           @foreach (var adm in Model.Administrations ?? Enumerable.Empty<Administration>())
+                {
+                    <tr>
+                        <td>@adm.Vaccine?.Name</td>
+                        <td>@adm.AdministeredOn.ToString("dd MMM yyyy")</td>
+                        <td>@adm.Clinician?.FirstName</td>
+                        <td>@adm.Facility?.FacilityName</td>
+                    </tr>
+                }
+                    }
+                   else
+                   {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No immunisation records found.</td>
+                    </tr>
+                   }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model?.TotalPages > 1)
+    {
+        <div class="mt-2">
+            <nav aria-label="Patient immunisation pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <button class="page-link"
+                                onclick="loadPatientDetails(@Model.Patient.PatientId, @(Model.CurrentPage - 1), @Model.PageSize)">
+                            &laquo; Previous
+                        </button>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                            <button class="page-link @(Model.CurrentPage == i ? "text-white" : "text-dark")"
+                                    style="@(Model.CurrentPage == i ? "background-color:#00ced1;" : null)"
+                                    onclick="loadPatientDetails(@Model.Patient.PatientId, @i, @Model.PageSize)">
+                                @i
+                            </button>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <button class="page-link"
+                                onclick="loadPatientDetails(@Model.Patient.PatientId, @(Model.CurrentPage + 1), @Model.PageSize)">
+                            Next &raquo;
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Reload the patient details via AJAX
+        function loadPatientDetails(patientId, page = 1, pageSize = 5) {
+            $('#patientDetailsWrapper').html(
+                '<div class="text-center p-4"><div class="spinner-border text-cyan"></div></div>'
+            );
+
+            $.get('/Patient/Details', { id: patientId, page: page, pageSize: pageSize }, function (data) {
+                $('#patientDetailsWrapper').html(data);
+            }).fail(function () {
+                $('#patientDetailsWrapper').html('<div class="alert alert-danger p-4 text-center">Error loading data</div>');
+            });
+        }
+    </script>
+}
